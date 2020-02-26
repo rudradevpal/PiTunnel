@@ -69,7 +69,7 @@ def reverse_forward_tunnel(remote_target_port, local_server_ip, local_server_por
 
 def main():
     try:
-        logger.info("Starting Py-Tunnel...")
+        logger.info("Starting PiTunnel...")
 
         logger.info("Waiting for internet...")
         for t in range(0, 13):
@@ -120,7 +120,7 @@ def main():
             logger.error(str(e))
             sys.exit(1)
     except KeyboardInterrupt:
-        logger.info("Py-Tunnel Stopped!\n")
+        logger.info("PiTunnel Stopped!\n")
         sys.exit(0)
 
 
