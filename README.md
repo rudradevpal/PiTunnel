@@ -4,7 +4,7 @@ Reverse SSH Tunnel for Raspberry Pi. It will also work on any linux distro.
 ## Pre-requisites
 * Python 2.7
 * pyton-pip
-* A VM/Server with Pulic/Static IP (If you don't have one, try [portmap.io](https://portmap.io/ "portmap.io URL"))
+* A VM/Server with Public/Static IP (If you don't have one, try [portmap.io](https://portmap.io/ "portmap.io URL"))
 
 ## Usage
 1. Clone this Repo
