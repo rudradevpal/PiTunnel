@@ -90,7 +90,7 @@ def main():
         remote_public_ip = str(remote_public_ip_port[0])
         remote_target_port = int(remote_public_ip_port[1])
         remote_os_username = str(sys.argv[3])
-        # remote_os_password = str(config.get('REMOTE', 'os_password'))
+        # remote_os_password = str(sys.argv[4])
         remote_os_key = str(sys.argv[4])
 
         client = paramiko.SSHClient()
