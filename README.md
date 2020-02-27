@@ -18,12 +18,12 @@ Reverse SSH Tunnel for Raspberry Pi. It will also work on any linux distro.
   python tunnel.py <LOCAL_PORT> <VM_IP>:<VM_PORT_TO_MAP> <VM_USERNAME> <PATH_TO_KEY_FILE>
   ```
   ```shell
-  python tunnel.py 80 192.18.13.16:8080 root /home/pi/pi-tunnel/mykey.pem
+  python tunnel.py 80 192.18.13.16:8080 root /root/PiTunnel/mykey.pem
   ```
   OR
 
 5. Add to `crontab`
   ```shell
   crontab -e
-  @reboot /usr/bin/python /home/pi/py-tunnel/tunnel.py 80 192.18.13.16:8080 root /home/pi/pi-tunnel/mykey.pem  > /home/pi/pi-tunnel/pi-tunnel.log 2>&1 &
+  @reboot /usr/bin/python /root/PiTunnel/tunnel.py 80 192.18.13.16:8080 root /root/PiTunnel/mykey.pem  > /root/PiTunnel/PiTunnel.log 2>&1 &
   ```
