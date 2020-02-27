@@ -28,3 +28,7 @@ Access your home server without static IP from your provider or Router Port Forw
   crontab -e
   @reboot /usr/bin/python /root/PiTunnel/tunnel.py 80 192.18.13.16:8080 root /root/PiTunnel/mykey.pem  > /root/PiTunnel/PiTunnel.log 2>&1 &
   ```
+6. Reboot your server
+  ```shell
+  reboot
+  ```
