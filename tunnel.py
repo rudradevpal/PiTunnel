@@ -111,6 +111,7 @@ def main():
             logger.error(str(e))
             sys.exit(1)
         try:
+            time.sleep(60)
             logger.info("Starting Reverse Tunnel")
             reverse_forward_tunnel(
                 remote_target_port, local_server_ip, local_server_port, client.get_transport()
