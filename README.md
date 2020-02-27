@@ -1,5 +1,6 @@
 # PiTunnel
 Reverse SSH Tunnel for Raspberry Pi. It will also work on any linux distro.
+Access your home server without static IP from your provider or Router Port Forward.
 
 ## Pre-requisites
 * Python 2.7
