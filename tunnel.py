@@ -53,35 +53,49 @@ def handler(chan, local_server_ip, local_server_port, remote_target_port):
 
 
 def reverse_forward_tunnel(remote_target_port, local_server_ip, local_server_port, transport):
-    transport.request_port_forward("", remote_target_port)
-    logger.info("Reverse Tunnel Started!")
-    while True:
-        chan = transport.accept(1000)
-        if chan is None:
-            continue
-        logger.info("Tunneling request from " + str(chan.origin_addr[0]) + ":" + str(chan.origin_addr[1]))
-        thr = threading.Thread(
-            target=handler, args=(chan, local_server_ip, local_server_port, remote_target_port)
+    try:
+        transport.request_port_forward("", remote_target_port)
+        logger.info("Reverse Tunnel Started!")
+        while True:
+            chan = transport.accept(1000)
+            if chan is None:
+                continue
+            logger.info("Tunneling request from " + str(chan.origin_addr[0]) + ":" + str(chan.origin_addr[1]))
+            thr = threading.Thread(
+                target=handler, args=(chan, local_server_ip, local_server_port, remote_target_port)
+            )
+            thr.setDaemon(True)
+            thr.start()
+        return True
+    except Exception as e:
+        logger.error(str(e))
+        return False
+
+
+def ssh_connection(remote_public_ip, remote_ssh_port, remote_os_username, remote_os_key):
+    client = paramiko.SSHClient()
+    client.load_system_host_keys()
+    client.set_missing_host_key_policy(paramiko.WarningPolicy())
+    try:
+        client.connect(
+            remote_public_ip,
+            remote_ssh_port,
+            username=remote_os_username,
+            # password=remote_os_password,
+            key_filename=remote_os_key,
         )
-        thr.setDaemon(True)
-        thr.start()
+        return client
+    except paramiko.SSHException:
+        logger.error("SSH Error")
+        return None
+    except Exception as e:
+        logger.error(str(e))
+        return None
 
 
 def main():
     try:
         logger.info("Starting PiTunnel...")
-
-        logger.info("Waiting for internet...")
-        for t in range(0, 13):
-            if check_connection():
-                logger.info("Internet is now connected!")
-                break
-            else:
-                if t < 12:
-                    time.sleep(10)
-                else:
-                    logger.info("Failed to connect to internet!")
-                    exit(1)
 
         local_server_ip = "127.0.0.1"
         local_server_port = int(sys.argv[1])
@@ -93,33 +107,61 @@ def main():
         # remote_os_password = str(sys.argv[4])
         remote_os_key = str(sys.argv[4])
 
-        client = paramiko.SSHClient()
-        client.load_system_host_keys()
-        client.set_missing_host_key_policy(paramiko.WarningPolicy())
-        try:
-            logger.info("Starting Secure Shell Connection")
-            client.connect(
-                remote_public_ip,
-                remote_ssh_port,
-                username=remote_os_username,
-                # password=remote_os_password,
-                key_filename=remote_os_key,
-            )
-            logger.info("Secure Shell Connected!")
-        except Exception as e:
-            logger.error("Secure Shell Connection Failed!")
-            logger.error(str(e))
-            sys.exit(1)
-        try:
-            time.sleep(60)
-            logger.info("Starting Reverse Tunnel")
-            reverse_forward_tunnel(
-                remote_target_port, local_server_ip, local_server_port, client.get_transport()
-            )
-        except Exception as e:
-            logger.error("Reverse Tunnel Start Failed!")
-            logger.error(str(e))
-            sys.exit(1)
+        logger.info("Waiting for internet...")
+        timer = 0
+        while timer <= 300:
+            if check_connection():
+                logger.info("Internet is now connected!")
+                break
+            else:
+                if timer == 300:
+                    logger.info("Failed to connect to internet!")
+                    exit(1)
+                else:
+                    timer += 10
+                    time.sleep(10)
+
+        logger.info("Starting Secure Shell Connection")
+        timer = 0
+        client = None
+        while timer <= 180:
+            client = ssh_connection(remote_public_ip, remote_ssh_port, remote_os_username, remote_os_key)
+            if client is not None:
+                logger.info("Secure Shell Connected!")
+                break
+            else:
+                if timer == 180:
+                    logger.error("Secure Shell Connection Failed!")
+                    exit(1)
+                else:
+                    timer += 10
+                    time.sleep(10)
+                    if timer <= 180:
+                        logger.info("Retrying Secure Shell Connection")
+
+        time.sleep(6)
+        logger.info("Starting Reverse Tunnel")
+        counter = 0
+        while True:
+            res = reverse_forward_tunnel(remote_target_port, local_server_ip, local_server_port, client.get_transport())
+            if not res:
+                time.sleep(10)
+                counter += 1
+                logger.info(str(counter) + ": Retrying Reverse Tunnel")
+
+        # timer = 0
+        # while timer <= 180:
+        #     res = reverse_forward_tunnel(remote_target_port, local_server_ip, local_server_port, client.get_transport())
+        #     if not res:
+        #         if timer == 180:
+        #             logger.error("Reverse Tunnel Start Failed!")
+        #             exit(1)
+        #         else:
+        #             timer += 10
+        #             time.sleep(10)
+        #             if timer <= 180:
+        #                 logger.info("Retrying Reverse Tunnel")
+
     except KeyboardInterrupt:
         logger.info("PiTunnel Stopped!\n")
         sys.exit(0)
